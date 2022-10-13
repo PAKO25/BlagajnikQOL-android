@@ -47,7 +47,6 @@ export default class Alert extends React.Component {
         this.setState(obj);
     }
     hideAlert = () => {
-        console.log('hide')
         this.setState({ ...this.state, showAlert: false })
     }
 
