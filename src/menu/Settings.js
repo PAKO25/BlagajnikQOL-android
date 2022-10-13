@@ -81,6 +81,7 @@ class Settings extends React.Component {
     }
 
     render() {
+        //dodaj sendemail, autosaveemail
         return (
             <Frame navigation={this.props.navigation} hideToolbarOnKeyboard={false}>
 
