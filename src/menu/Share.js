@@ -2,9 +2,9 @@ import React from "react";
 import { BackHandler } from "react-native";
 import SharedGroups from './sharedContent/SharedGroups';
 import SharedLists from "./sharedContent/SharedLists";
-import AddButton from '../AddButton';
+import AddButton from '../utils/AddButton';
 import SharedHumans from "./sharedContent/SharedHumans";
-import Frame from "../Frame";
+import Frame from "../utils/Frame";
 
 class Share extends React.Component {
 

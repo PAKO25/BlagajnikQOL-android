@@ -3,9 +3,9 @@ import { Text, StyleSheet, View, TextInput, Keyboard, BackHandler, Switch } from
 import { getData, Config, storeData, pushHistory } from '../config';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import Alert from "../Alert";
-import Frame from "../Frame";
-import AddButton from '../AddButton';
+import Alert from "../utils/Alert";
+import Frame from "../utils/Frame";
+import AddButton from '../utils/AddButton'
 import uuid from 'react-native-uuid';
 
 class AddScreen extends React.Component {
@@ -129,14 +129,16 @@ class AddScreen extends React.Component {
                     })
                     await firestore().collection('Shared').doc(randomId).collection('group').doc('main').set({
                         liste: groupLists,
-                        ljudje: groupPeople
+                        ljudje: groupPeople,
+                        emails: []
                     })
 
                 } else {
                     //normalna skupina
                     await firestore().collection('Userdata').doc(auth().currentUser.uid).collection(groupName).doc('main').set({
                         liste: groupLists,
-                        ljudje: groupPeople
+                        ljudje: groupPeople,
+                        emails: []
                     })
                 }
 

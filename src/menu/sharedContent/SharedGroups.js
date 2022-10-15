@@ -4,7 +4,7 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { storeData, Config, pushHistory } from '../../config';
 import Tile from '../../content/Tile';
-import Alert from '../../Alert';
+import Alert from '../../utils/Alert';
 
 class SharedGroups extends React.Component {
 

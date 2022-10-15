@@ -4,7 +4,7 @@ import Tile from '../../content/Tile';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { storeData, getData, Config, pushHistory } from '../../config';
-import Alert from '../../Alert';
+import Alert from '../../utils/Alert';
 
 class SharedLists extends React.Component {
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, ScrollView, StyleSheet, View, TouchableOpacity } from "react-native";
-import Frame from "../Frame";
+import Frame from "../utils/Frame";
 import { loadHistory } from "../config";
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';

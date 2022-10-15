@@ -4,8 +4,8 @@ import Groups from "./content/Groups";
 import Lists from "./content/Lists";
 import Humans from "./content/Humans";
 import { Config } from "./config";
-import Frame from "./Frame";
-import AddButton from './AddButton';
+import Frame from "./utils/Frame";
+import AddButton from './utils/AddButton';
 import HomeExtension from "./content/HomeExtension";
 
 
@@ -71,13 +71,13 @@ class Home extends React.Component {
 
 
         return (
-            <Frame navigation={this.props.navigation} hideToolbarOnKeyboard={false}>
+            <Frame navigation={this.props.navigation} hideToolbarOnKeyboard={true}>
 
                 {this.state.render ? (
                     <>
                         {!Config.settings.showShared ? (
                             <>
-                                <View style={{ top: 20, marginBottom: 250 }}>
+                                <View style={{ top: 20, marginBottom: 250, }}>
                                     {/* navigator za med contentom */}
                                     {show}
                                 </View>

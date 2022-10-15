@@ -14,6 +14,7 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { Config, useNewSettings, checkShared } from './config';
 import GroupSettings from './menu/sharedContent/GroupSettings';
+import Payments from './menu/Payments'
 
 
 GoogleSignin.configure({
@@ -88,6 +89,7 @@ const App = () => {
             <Drawer.Screen name="GroupSettings" component={GroupSettings} />
             <Drawer.Screen name="Settings" component={Settings} />
             <Drawer.Screen name="History" component={History} />
+            <Drawer.Screen name="Payments" component={Payments} />
 
           </Drawer.Navigator>
         </NavigationContainer >

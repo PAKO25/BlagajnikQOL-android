@@ -1,10 +1,10 @@
 import React from "react";
 import { Text, ScrollView, StyleSheet, View, TouchableOpacity, Switch, Pressable, findNodeHandle } from "react-native";
 import { Config, changeSettings, setNewBackground } from "../config";
-import Alert from "../Alert";
+import Alert from "../utils/Alert";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import ExplainText from "./ExplainText";
-import Frame from "../Frame";
+import ExplainText from "../utils/ExplainText";
+import Frame from "../utils/Frame";
 
 class Settings extends React.Component {
 
@@ -17,6 +17,7 @@ class Settings extends React.Component {
             confirmDelete: Config.settings.confirmDelete,
             showShared: Config.settings.showShared,
             confirmToggle: Config.settings.confirmToggle,
+            sendEmail: Config.settings.sendEmail,
             explainText: '',
             showExplainText: false,
             explainTextY: 0
@@ -138,11 +139,33 @@ class Settings extends React.Component {
                             if (e.nativeEvent.target == elementHandle) {
                                 relY = (Style.label.height - Style.settingsText.fontSize) / 2 + relY;
                             }
+                            this.showExplainText("Asks you to send an email after toggling a human.",
+                                e.nativeEvent.pageY - relY + Style.label.height);
+                        }}>
+                        <View style={[Style.label, Style.fade]}>
+                            <Text style={Style.settingsText} ref="el3">Send email</Text>
+                            <Switch
+                                onValueChange={value => { this.toggleSwitch('sendEmail', value) }}
+                                value={this.state.sendEmail}
+                                style={Style.radio}
+                                trackColor={{ false: Config.settings.mainColor, true: '#000000' }}
+                                thumbColor={this.state.sendEmail ? Config.settings.mainColor : '#000000'}
+                            />
+                        </View>
+                    </Pressable>
+
+                    <Pressable delayLongPress={300}
+                        onLongPress={(e) => {
+                            let relY = e.nativeEvent.locationY;
+                            let elementHandle = findNodeHandle(this.refs["el4"]);
+                            if (e.nativeEvent.target == elementHandle) {
+                                relY = (Style.label.height - Style.settingsText.fontSize) / 2 + relY;
+                            }
                             this.showExplainText("If enabled, displays shared groups with private groups on home screen.",
                                 e.nativeEvent.pageY - relY + Style.label.height)
                         }}>
                         <View style={[Style.label, Style.fade]}>
-                            <Text style={Style.settingsText} ref="el3">Show shared</Text>
+                            <Text style={Style.settingsText} ref="el4">Show shared</Text>
                             <Switch
                                 onValueChange={value => { this.toggleSwitch('showShared', value) }}
                                 value={this.state.showShared}

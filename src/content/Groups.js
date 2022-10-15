@@ -4,7 +4,7 @@ import Tile from './Tile';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { storeData, Config, pushHistory } from '../config';
-import Alert from '../Alert';
+import Alert from '../utils/Alert';
 
 class Groups extends React.Component {
 

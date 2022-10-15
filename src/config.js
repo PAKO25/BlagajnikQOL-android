@@ -1,6 +1,6 @@
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import lzstring from './lz-string';
+import lzstring from './utils/lz-string';
 
 
 var storage = {};
@@ -18,6 +18,7 @@ let Config = {
         confirmDelete: true,
         showShared: false,
         confirmToggle: false,
+        sendEmail: true,
         mainColor: '#429ef5',
         customBackground: {
             use: false,
@@ -26,6 +27,11 @@ let Config = {
     },
     background: {
         uri: '../assets/ozadje.jpg',
+    },
+    email: {
+        publicKey: 'aPviREniYHskJ59p5',
+        serviceId: 'service_a92cifs',
+        templateId: 'template_bwl2eme',
     }
 }
 

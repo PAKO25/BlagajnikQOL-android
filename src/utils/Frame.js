@@ -1,6 +1,6 @@
 import React from "react";
 import { ImageBackground, StyleSheet, Keyboard, TouchableOpacity, Image, View } from "react-native";
-import { Config } from "./config";
+import { Config } from "../config";
 import { useDrawerStatus } from "@react-navigation/drawer";
 
 class Frame extends React.Component {
@@ -33,7 +33,7 @@ class Frame extends React.Component {
             <ImageBackground
                 source={Config.settings.customBackground.use ?
                     ({ uri: Config.settings.customBackground.base64 }) :
-                    (require('../assets/ozadje.jpg'))}
+                    (require('../../assets/ozadje.jpg'))}
                 resizeMode={'stretch'} style={Style.background}>
 
                 {this.props.drawerOpen === 'open' ? (null) : (<>
@@ -43,7 +43,7 @@ class Frame extends React.Component {
                             {/* title */}
 
                             <TouchableOpacity style={[Style.menuImg, { marginLeft: 0 }]} onPress={() => this.props.navigation.toggleDrawer()}>
-                                <Image source={require('../assets/menu.jpg')} style={Style.menuImg}></Image>
+                                <Image source={require('../../assets/menu.jpg')} style={Style.menuImg}></Image>
                             </TouchableOpacity>
 
                             {/* ../assets/searchicon.png */}

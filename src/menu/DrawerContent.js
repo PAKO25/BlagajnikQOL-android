@@ -36,6 +36,11 @@ const DrawerContent = (props) => {
                     <Text style={styles.labelText}>History</Text>
                 </TouchableOpacity>
 
+                <TouchableOpacity style={styles.label} onPress={() => {props.navigation.navigate('Payments')}}>
+                    <Image source={require('../../assets/coinicon.png')} style={styles.icon} />
+                    <Text style={styles.labelText}>Payments</Text>
+                </TouchableOpacity>
+
             </ScrollView>
 
             <View style={styles.line} />

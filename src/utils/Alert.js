@@ -43,7 +43,7 @@ export default class Alert extends React.Component {
             ...this.state, showAlert: true, alertTitle: title, alertMessage: msg, alertCancelText:
                 cancelText, alertConfirmText: confirmText, alertCancelFunc: cancelFunc, alertConfirmFunc: confirmFunc,
         };
-        showCancelButton ? obj['showCancelButton'] = true : null
+        showCancelButton ? obj['showCancelButton'] = true : obj['showCancelButton'] = false
         this.setState(obj);
     }
     hideAlert = () => {

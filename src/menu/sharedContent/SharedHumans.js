@@ -4,7 +4,7 @@ import Human from '../../content/Human';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { getData, storeData, Config, pushHistory } from '../../config';
-import Alert from '../../Alert';
+import Alert from '../../utils/Alert';
 
 class SharedHumans extends React.Component {
 
@@ -104,7 +104,7 @@ class SharedHumans extends React.Component {
             <>
                 <ScrollView contentContainerStyle={{
                     flexDirection: 'row',
-                    justifyContent: 'space-evenly',
+                    width: 330,
                     flexWrap: 'wrap',
                 }}>
 

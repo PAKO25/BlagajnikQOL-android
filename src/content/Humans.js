@@ -4,7 +4,7 @@ import Human from './Human'
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { getData, storeData, Config, pushHistory } from '../config';
-import Alert from '../Alert';
+import Alert from '../utils/Alert';
 
 class Humans extends React.Component {
 
@@ -101,8 +101,8 @@ class Humans extends React.Component {
       <>
         <ScrollView contentContainerStyle={{
           flexDirection: 'row',
-          justifyContent: 'space-evenly',
           flexWrap: 'wrap',
+          width: 330
         }}>
 
           {this.state.jsx}

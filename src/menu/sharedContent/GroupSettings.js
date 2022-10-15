@@ -1,12 +1,12 @@
 import React from "react";
 import { Text, StyleSheet, BackHandler, View, TouchableOpacity, TextInput, ScrollView, Keyboard } from "react-native";
 import { Config } from '../../config';
-import AddButton from "../../AddButton";
+import AddButton from "../../utils/AddButton";
 import AccessList from "./AccessField";
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import Alert from "../../Alert";
-import Frame from "../../Frame";
+import Alert from "../../utils/Alert";
+import Frame from "../../utils/Frame";
 
 class GroupSettings extends React.Component {
 

@@ -6,7 +6,7 @@ import SharedLists from "../menu/sharedContent/SharedLists";
 import Humans from "./Humans";
 import SharedHumans from "../menu/sharedContent/SharedHumans";
 import { Text, View, StyleSheet } from "react-native";
-import AddButton from "../AddButton";
+import AddButton from "../utils/AddButton";
 
 class HomeExtension extends React.Component {
     constructor(props) {
