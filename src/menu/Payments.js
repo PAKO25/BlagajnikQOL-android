@@ -27,6 +27,7 @@ export default class Payments extends React.Component {
     refresh = async () => {
         const doc = await firestore().collection('Userdata').doc(auth().currentUser.uid).get();
         const data = doc.data().payments;
+        if (data == undefined) return;
         const jsx = data.map((batch, i) => {
             const date = new Date();
             date.setTime(batch.time);

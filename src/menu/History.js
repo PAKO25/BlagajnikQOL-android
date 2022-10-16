@@ -3,6 +3,7 @@ import { Text, ScrollView, StyleSheet, View, TouchableOpacity } from "react-nati
 import Frame from "../utils/Frame";
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import HistoryField from "./HistoryField";
 
 class History extends React.Component {
 
@@ -117,7 +118,7 @@ class History extends React.Component {
         })
         let groupedByDate = {};
         const genForPush = (data) => {
-            let obj = { action: data.action, path: data.path, who: data.who }
+            let obj = { action: data.action, path: data.path, who: data.who, time: data.time }
             data.all ? obj.all = data.all : null;
             data.by ? obj.by = data.by : null;
             return obj;
@@ -130,24 +131,24 @@ class History extends React.Component {
         }
         let jsx = Object.entries(groupedByDate).map((batch) => {
             //čas
-            let jsx = [<Text style={{fontSize: 15, color: '#000000'}}>{batch[0]}</Text>];
+            let jsx = [<View style={Style.container} key={0}><Text style={{ fontSize: 15, color: '#000000' }}>{batch[0]}</Text></View>];
             //ostalo
-            batch[1].forEach(obj => {
+            batch[1].forEach((obj, i) => {
                 if (obj.action.name == 'Toggle') {
-                    jsx.push(<Text>Toggle: ({obj.path}) {obj.who} {'=>'} {obj.action.value ? 'on' : 'off'} {obj.by ? obj.by : null}</Text>)
+                    jsx.push(<HistoryField text={
+                        <Text>Toggle: ({obj.path}) {obj.who} {'=>'} {obj.action.value ? 'on' : 'off'} {obj.by ? obj.by : null}</Text>}
+                        obj={obj} key={i + 1} private={this.state.private} refresh={this.refresh} />)
                 } else if (obj.action.name == 'Delete') {
-                    jsx.push(<Text>Delete: ({obj.path}) {obj.who} {obj.all ? obj.all : null} {obj.by ? obj.by : null}</Text>)
+                    jsx.push(<HistoryField text={
+                        <Text>Delete: ({obj.path}) {obj.who} {obj.all ? obj.all : null} {obj.by ? obj.by : null}</Text>}
+                        obj={obj} key={i + 1} private={this.state.private} refresh={this.refresh} />)
                 } else if (obj.action.name == 'Add') {
-                    jsx.push(<Text>Add: ({obj.path}) {obj.who} {obj.all ? obj.all : null} {obj.by ? obj.by : null}</Text>)
+                    jsx.push(<HistoryField text={
+                        <Text>Add: ({obj.path}) {obj.who} {obj.all ? obj.all : null} {obj.by ? obj.by : null}</Text>}
+                        obj={obj} key={i + 1} private={this.state.private} refresh={this.refresh} />)
                 }
             })
-            return (jsx.map(((obj, i) => {
-                return (
-                    <View style={Style.container} key={i}>
-                        {obj}
-                    </View>
-                )
-            })))
+            return jsx;
         });
 
         return (
