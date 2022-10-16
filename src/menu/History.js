@@ -112,6 +112,9 @@ class History extends React.Component {
             let newdate = date.getDate().toString() + '.' + (date.getMonth() + 1).toString();
             return { ...obj, date: newdate };
         })
+        history2.sort((a, b) => {
+            return b.time - a.time
+        })
         let groupedByDate = {};
         const genForPush = (data) => {
             let obj = { action: data.action, path: data.path, who: data.who }
