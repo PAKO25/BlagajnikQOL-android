@@ -1,7 +1,6 @@
 import React from "react";
 import { Text, ScrollView, StyleSheet, View, TouchableOpacity } from "react-native";
 import Frame from "../utils/Frame";
-import { loadHistory } from "../config";
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
@@ -26,15 +25,35 @@ class History extends React.Component {
         if (this.state.private) {
             this.setState({
                 ...this.state,
-                privateHistory: await loadHistory(false),
+                privateHistory: await this.loadHistory(false),
                 sharedHistory: '',
             });
         } else {
             this.setState({
                 ...this.state,
                 privateHistory: '',
-                sharedHistory: await loadHistory(true),
+                sharedHistory: await this.loadHistory(true),
             });
+        }
+    }
+
+    loadHistory = async (shared) => {
+        if (shared) {
+            //shared history
+            let res = [];
+            const mainDoc = await firestore().collection('Userdata').doc(auth().currentUser.uid).get();
+            const sharedGroups = mainDoc.data().shared;
+            for (const id of sharedGroups) {
+                const doc = await firestore().collection('Shared').doc(id).get();
+                const history = doc.data().history;
+                if (history != undefined) history.forEach((i) => res.push(i));
+            }
+            return res;
+        } else {
+            //private history
+            const doc = await firestore().collection('Userdata').doc(auth().currentUser.uid).get();
+            const data = doc.data();
+            return data.history;
         }
     }
 
@@ -42,7 +61,7 @@ class History extends React.Component {
         this.setState({
             ...this.state,
             private: true,
-            privateHistory: await loadHistory(false)
+            privateHistory: await this.loadHistory(false)
         })
     }
 
@@ -50,7 +69,7 @@ class History extends React.Component {
         this.setState({
             ...this.state,
             private: false,
-            sharedHistory: await loadHistory(true)
+            sharedHistory: await this.loadHistory(true)
         })
     }
 
@@ -85,26 +104,48 @@ class History extends React.Component {
     render() {
         let history;
         this.state.private ? history = this.state.privateHistory : history = this.state.sharedHistory
-        let sorted = history.sort((a, b) => {
-            return b.time - a.time
-        })
-        let jsx = sorted.map((obj, i) => {
-            let jsx;
-            if (obj.action.name == 'Toggle') {
-                jsx = <Text>Toggle: ({obj.path}) {obj.who} {'=>'} {obj.action.value ? 'on' : 'off'} {obj.by ? obj.by : null}</Text>
-            } else if (obj.action.name == 'Delete') {
-                jsx = <Text>Delete: ({obj.path}) {obj.who} {obj.all ? obj.all : null} {obj.by ? obj.by : null}</Text>
-            } else if (obj.action.name == 'Add') {
-                jsx = <Text>Add: ({obj.path}) {obj.who} {obj.all ? obj.all : null} {obj.by ? obj.by : null}</Text>
-            }
-            return (
-                <View style={Style.container} key={i}>
 
-                    {jsx}
-
-                </View>
-            )
+        const date = new Date();
+        //vsem objectom doda date
+        let history2 = history.map((obj) => {
+            date.setTime(obj.time);
+            let newdate = date.getDate().toString() + '.' + (date.getMonth() + 1).toString();
+            return { ...obj, date: newdate };
         })
+        let groupedByDate = {};
+        const genForPush = (data) => {
+            let obj = { action: data.action, path: data.path, who: data.who }
+            data.all ? obj.all = data.all : null;
+            data.by ? obj.by = data.by : null;
+            return obj;
+        }
+        for (let i of history2) {
+            if (groupedByDate[i.date] == undefined) groupedByDate[i.date] = [];
+        }
+        for (let i of history2) {
+            groupedByDate[i.date].push(genForPush(i))
+        }
+        let jsx = Object.entries(groupedByDate).map((batch) => {
+            //čas
+            let jsx = [<Text style={{fontSize: 15, color: '#000000'}}>{batch[0]}</Text>];
+            //ostalo
+            batch[1].forEach(obj => {
+                if (obj.action.name == 'Toggle') {
+                    jsx.push(<Text>Toggle: ({obj.path}) {obj.who} {'=>'} {obj.action.value ? 'on' : 'off'} {obj.by ? obj.by : null}</Text>)
+                } else if (obj.action.name == 'Delete') {
+                    jsx.push(<Text>Delete: ({obj.path}) {obj.who} {obj.all ? obj.all : null} {obj.by ? obj.by : null}</Text>)
+                } else if (obj.action.name == 'Add') {
+                    jsx.push(<Text>Add: ({obj.path}) {obj.who} {obj.all ? obj.all : null} {obj.by ? obj.by : null}</Text>)
+                }
+            })
+            return (jsx.map(((obj, i) => {
+                return (
+                    <View style={Style.container} key={i}>
+                        {obj}
+                    </View>
+                )
+            })))
+        });
 
         return (
             <Frame navigation={this.props.navigation} hideToolbarOnKeyboard={false}>

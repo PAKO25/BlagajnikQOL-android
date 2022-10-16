@@ -117,25 +117,6 @@ async function checkShared() {
     }
 }
 
-async function loadHistory(shared) {
-    if (shared) {
-        //shared history
-        let res = [];
-        const mainDoc = await firestore().collection('Userdata').doc(auth().currentUser.uid).get();
-        const sharedGroups = mainDoc.data().shared;
-        for (const id of sharedGroups) {
-            const doc = await firestore().collection('Shared').doc(id).get();
-            const history = doc.data().history;
-            if (history != undefined) history.forEach((i) => res.push(i));
-        }
-        return res;
-    } else {
-        //private history
-        const doc = await firestore().collection('Userdata').doc(auth().currentUser.uid).get();
-        const data = doc.data();
-        return data.history;
-    }
-}
 async function pushHistory(action, path, who, alllists, shared, sharedGroupId, by) {
     const push = {
         action: action,
@@ -159,4 +140,4 @@ async function pushHistory(action, path, who, alllists, shared, sharedGroupId, b
     }
 }
 
-export { Config, storeData, getData, useNewSettings, changeSettings, setNewBackground, checkShared, pushHistory, loadHistory };
+export { Config, storeData, getData, useNewSettings, changeSettings, setNewBackground, checkShared, pushHistory };
