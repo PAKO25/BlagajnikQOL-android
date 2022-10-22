@@ -4,11 +4,15 @@ import Frame from "../utils/Frame";
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import HistoryField from "./HistoryField";
+import Alert from "../utils/Alert";
 
 class History extends React.Component {
 
     constructor(props) {
         super(props);
+
+        this.alertRef = React.createRef();
+
         this.state = {
             jsx: <Text>Fetching data...</Text>,
             private: true,
@@ -137,15 +141,15 @@ class History extends React.Component {
                 if (obj.action.name == 'Toggle') {
                     jsx.push(<HistoryField text={
                         <Text>Toggle: ({obj.path}) {obj.who} {'=>'} {obj.action.value ? 'on' : 'off'} {obj.by ? obj.by : null}</Text>}
-                        obj={obj} key={i + 1} private={this.state.private} refresh={this.refresh} />)
+                        obj={obj} key={i + 1} private={this.state.private} refresh={this.refresh} alertRef={this.alertRef} />)
                 } else if (obj.action.name == 'Delete') {
                     jsx.push(<HistoryField text={
                         <Text>Delete: ({obj.path}) {obj.who} {obj.all ? obj.all : null} {obj.by ? obj.by : null}</Text>}
-                        obj={obj} key={i + 1} private={this.state.private} refresh={this.refresh} />)
+                        obj={obj} key={i + 1} private={this.state.private} refresh={this.refresh} alertRef={this.alertRef} />)
                 } else if (obj.action.name == 'Add') {
                     jsx.push(<HistoryField text={
                         <Text>Add: ({obj.path}) {obj.who} {obj.all ? obj.all : null} {obj.by ? obj.by : null}</Text>}
-                        obj={obj} key={i + 1} private={this.state.private} refresh={this.refresh} />)
+                        obj={obj} key={i + 1} private={this.state.private} refresh={this.refresh} alertRef={this.alertRef} />)
                 }
             })
             return jsx;
@@ -173,6 +177,7 @@ class History extends React.Component {
                 <TouchableOpacity style={[Style.button, { marginBottom: 20 }]} onPress={this.clearHistory}>
                     <Text style={Style.btnText}>Clear</Text>
                 </TouchableOpacity>
+                <Alert ref={this.alertRef} />
             </Frame>
         )
     }

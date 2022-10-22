@@ -8,6 +8,7 @@ import firestore from '@react-native-firebase/firestore';
 import Alert from "../../utils/Alert";
 import Frame from "../../utils/Frame";
 
+
 class GroupSettings extends React.Component {
 
     constructor(props) {
@@ -34,19 +35,7 @@ class GroupSettings extends React.Component {
             );
             BackHandler.addEventListener('hardwareBackPress', this.handleBack);
 
-            const id = this.props.route.params.id;
-
-            const doc = await firestore().collection('Shared').doc(id).get();
-            const data = doc.data();
-
-            let owner = false
-            if (data.owner == auth().currentUser.uid) owner = true;
-            this.setState({
-                ...this.state,
-                owner: owner,
-                accessList: data.access,
-                id: id
-            })
+            this.update();
         })
         this.props.navigation.addListener('blur', () => {
             this.keyboardDidShowSubscription.remove();
@@ -64,12 +53,43 @@ class GroupSettings extends React.Component {
         return true;
     }
 
-    removeAccess = async (name, uid) => {
-        if (!this.state.owner) return;
-        await firestore().collection('Shared').doc(this.state.id).update({
-            access: firestore.FieldValue.arrayRemove({ name: name, uid: uid })
+    update = async () => {
+        const id = this.props.route.params.id;
+
+        const doc = await firestore().collection('Shared').doc(id).get();
+        const data = doc.data();
+
+        let owner = false
+        if (data.owner == auth().currentUser.uid) owner = true;
+
+        let accessList = [];
+
+        for (let i of data.access) {
+            accessList.push({ ...i, waiting: false });
+        }
+        for (i of data.waiting) {
+            accessList.push({ email: i, waiting: true });
+        }
+        this.setState({
+            ...this.state,
+            owner: owner,
+            accessList: accessList,
+            id: id
         })
-        this.componentDidMount();
+    }
+
+    removeAccess = async (waiting, name, uid) => {
+        if (!this.state.owner) return;
+        !waiting ? (
+            await firestore().collection('Shared').doc(this.state.id).update({
+                access: firestore.FieldValue.arrayRemove({ name: name, uid: uid })
+            })
+        ) : (
+            await firestore().collection('Shared').doc(this.state.id).update({
+                waiting: firestore.FieldValue.arrayRemove(name)
+            })
+        )
+        this.update();
     }
 
     addAccess = async () => {
@@ -88,7 +108,7 @@ class GroupSettings extends React.Component {
         Keyboard.dismiss();
 
         this.alertRef.current.showAlert('Success!', `Added ${this.state.access} to the waiting list. Tell them to login to gain access.`, 'NO', 'OK',
-            () => { null }, () => { this.alertRef.current.hideAlert(); }, false)
+            () => { null }, () => { this.alertRef.current.hideAlert(); this.update() }, false)
     }
 
     render() {
@@ -118,8 +138,11 @@ class GroupSettings extends React.Component {
 
                         <ScrollView contentContainerStyle={Style.accessList}>
                             {this.state.accessList.map((obj, i) => {
+                                if (obj.waiting) {
+                                    return <AccessList email={obj.email} key={i} click={this.removeAccess} waiting={true} />
+                                }
                                 if (obj.uid == auth().currentUser.uid) return null;
-                                return <AccessList name={obj.name} uid={obj.uid} key={i} click={this.removeAccess} />
+                                return <AccessList name={obj.name} uid={obj.uid} key={i} click={this.removeAccess} waiting={false} />
                             })}
                         </ScrollView>
 
@@ -183,7 +206,7 @@ const Style = StyleSheet.create({
         borderRadius: 30,
         flex: 1,
         alignItems: 'center',
-        paddingTop: 10
+        paddingTop: 10,
     },
     noperms: {
         justifyContent: 'center',

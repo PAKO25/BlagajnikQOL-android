@@ -3,19 +3,17 @@ import { TouchableOpacity } from "react-native";
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { Config } from "../config";
-import Alert from "../utils/Alert";
 
 export default class HistoryField extends React.Component {
     constructor(props) {
         super(props);
-        this.alertRef = React.createRef();
     }
 
     del = async () => {
 
         const asyncAlert = () => new Promise((resolve) => {
-            this.alertRef.current.showAlert('Wait!', `Are you sure you want to remove this log from history?`, 'NO', 'YES',
-                () => { this.alertRef.current.hideAlert(); resolve(false) }, () => { this.alertRef.current.hideAlert(); resolve(true) }, true)
+            this.props.alertRef.current.showAlert('Wait!', `Are you sure you want to remove this log from history?`, 'NO', 'YES',
+                () => { this.props.alertRef.current.hideAlert(); resolve(false) }, () => { this.props.alertRef.current.hideAlert(); resolve(true) }, true)
         })
         if (Config.settings.confirmDelete) {
             const sure = await asyncAlert();
@@ -60,8 +58,8 @@ export default class HistoryField extends React.Component {
             }
 
             if (!deleted) {
-                this.alertRef.current.showAlert('Ups!', `You can only delete logs if you are the owner/admin of the group!`, 'NO', 'OK',
-                () => { null }, () => { this.alertRef.current.hideAlert() }, false)
+                this.props.alertRef.current.showAlert('Ups!', `You can only delete logs if you are the owner/admin of the group!`, 'NO', 'OK',
+                () => { null }, () => { this.props.alertRef.current.hideAlert() }, false)
             }
         }
         this.props.refresh();
@@ -80,7 +78,6 @@ export default class HistoryField extends React.Component {
                 flexDirection: 'row',
             }} onLongPress={this.del}>
                 {this.props.text}
-                <Alert ref={this.alertRef} />
             </TouchableOpacity>
         )
     }
