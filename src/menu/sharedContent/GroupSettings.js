@@ -131,7 +131,9 @@ class GroupSettings extends React.Component {
         }
 
         //add to waitinglist
-        await firestore().collection('Shared').doc('waitingList').collection(email).doc(this.state.id).set({ 0: 0 });
+        await firestore().collection('Shared').doc('waitingList').collection(email).doc(this.state.id).set({ 
+            time: firestore.FieldValue.serverTimestamp()
+         });
 
         //add to access
         await firestore().collection('Shared').doc(this.state.id).update({

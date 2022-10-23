@@ -75,7 +75,8 @@ class SharedGroups extends React.Component {
         access: firestore.FieldValue.arrayRemove({
           name: auth().currentUser.displayName,
           uid: auth().currentUser.uid,
-          perms: perms
+          perms: perms,
+          email: auth().currentUser.email
         })
       })
     }

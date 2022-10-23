@@ -81,14 +81,25 @@ async function checkShared() {
     if (lists[0] != undefined) {
         for (const groupId of lists) {
 
-            await firestore().collection('Shared').doc(groupId).update({
-                access: firestore.FieldValue.arrayUnion({ name: auth().currentUser.displayName, uid: auth().currentUser.uid, perms: 'Viewer', email: auth().currentUser.email }),
-                waiting: firestore.FieldValue.arrayRemove(email)
-            }).catch(() => { console.log('fake waitinglist') })
+            //preveri če si na waiting listu
+            const doc = await firestore().collection('Shared').doc(groupId).get();
+            const waiting = doc.data().waiting;
+            let fake = true;
+            for (let i of waiting) {
+                if (i == auth().currentUser.email) fake = false;
+            }
+            if (!fake) {
 
-            await firestore().collection('Userdata').doc(auth().currentUser.uid).update({
-                shared: firestore.FieldValue.arrayUnion(groupId)
-            })
+                //doda
+                await firestore().collection('Shared').doc(groupId).update({
+                    access: firestore.FieldValue.arrayUnion({ name: auth().currentUser.displayName, uid: auth().currentUser.uid, perms: 'Viewer', email: auth().currentUser.email }),
+                    waiting: firestore.FieldValue.arrayRemove(email)
+                }).catch(() => { console.log('fake waitinglist') })
+
+                await firestore().collection('Userdata').doc(auth().currentUser.uid).update({
+                    shared: firestore.FieldValue.arrayUnion(groupId)
+                })
+            }
 
             await firestore().collection('Shared').doc('waitingList').collection(email).doc(groupId).delete();
         }
