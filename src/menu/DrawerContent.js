@@ -1,11 +1,13 @@
 import React from "react";
 import { Text, View, ScrollView, Image, StyleSheet, TouchableOpacity } from "react-native";
 import auth from '@react-native-firebase/auth';
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const DrawerContent = (props) => {
 
     const logOut = async () => {
         await auth().signOut();
+        await GoogleSignin.revokeAccess();
     }
 
     const username = auth().currentUser.displayName;

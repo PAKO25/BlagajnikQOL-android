@@ -73,7 +73,7 @@ async function checkShared() {
         for (const groupId of lists) {
 
             await firestore().collection('Shared').doc(groupId).update({
-                access: firestore.FieldValue.arrayUnion({ name: auth().currentUser.displayName, uid: auth().currentUser.uid }),
+                access: firestore.FieldValue.arrayUnion({ name: auth().currentUser.displayName, uid: auth().currentUser.uid, perms: 'Viewer' }),
                 waiting: firestore.FieldValue.arrayRemove(email)
             }).catch(() => { console.log('fake waitinglist') })
 

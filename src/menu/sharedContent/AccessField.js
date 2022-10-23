@@ -1,6 +1,9 @@
 import React from "react";
 import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import PermsPopup from "../../utils/PermsPopup";
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import { getData } from "../../config";
 
 class AccessList extends React.Component {
 
@@ -8,26 +11,54 @@ class AccessList extends React.Component {
         super(props);
 
         this.state = {
-            showPopup: false
+            showPopup: false,
+            perms: ''
         }
 
         this.permsPopupRef = React.createRef();
     }
 
-    showPermsPopup = () => {
+    showPermsPopup = async () => {
+        if (this.props.waiting) return;
+
         this.setState({
             ...this.state,
             showPopup: true
         })
         this.permsPopupRef.current.show(this.props.waiting ? this.props.email : this.props.name,
-             'Perms:', 'Viewer', ['Viewer', 'User', 'Admin'], this.done)
+            'Perms:', this.state.perms == '' ? this.props.perms : this.state.perms, ['Viewer', 'User', 'Admin'], this.done)
     }
 
-    done = (newperm) => {
-        console.log(newperm)
+    done = async (newperm) => {
+
+        if (newperm == (this.state.perms == '' ? this.props.perms : this.state.perms)) return;
+        
         this.setState({
             ...this.state,
-            showPopup: false
+            showPopup: false,
+        })
+
+        //dobi prvi object
+        let obj = {
+            name: this.props.name,
+            uid: this.props.uid,
+            perms: this.state.perms == '' ? this.props.perms : this.state.perms
+        }
+
+        //remova prvega
+        await firestore().collection('Shared').doc(getData('groupSettingsId')).update({
+            access: firestore.FieldValue.arrayRemove(obj)
+        })
+        //naredi novega
+        obj.perms = newperm;
+        await firestore().collection('Shared').doc(getData('groupSettingsId')).update({
+            access: firestore.FieldValue.arrayUnion(obj)
+        })
+
+        //da nove permse v state
+        this.setState({
+            ...this.state,
+            perms: newperm
         })
     }
 
@@ -49,7 +80,7 @@ class AccessList extends React.Component {
                                 )}
                             </Text>
                             <TouchableOpacity style={Style.button} onPress={() => {
-                                !this.props.waiting ? this.props.click(false, this.props.name, this.props.uid) :
+                                !this.props.waiting ? this.props.click(false, this.props.name, this.props.uid, this.props.perms) :
                                     this.props.click(true, this.props.email)
                             }}>
                                 <Text style={Style.remove}>X</Text>

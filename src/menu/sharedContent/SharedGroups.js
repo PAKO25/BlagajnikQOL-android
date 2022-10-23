@@ -19,9 +19,11 @@ class SharedGroups extends React.Component {
   }
 
 
-  clickOnTile = (name, id) => {
+  clickOnTile = (name, id, perms) => {
     storeData(['sharedGroupShown', id]);
     storeData(['sharedGroupShownName', name]);
+    storeData(['sharedGroupShownPerms', perms]);
+    console.log(perms)
     this.props.changeShown('lists', true) //shared = true
   }
 
@@ -39,27 +41,50 @@ class SharedGroups extends React.Component {
     } else {
       sure = true;
     }
-    
+
     if (!sure) return;
 
-    //dobi vse liste v grupi
-    const mainFile = await firestore().collection('Shared').doc(id).collection('group').doc('main').get();
-    const lists = mainFile.data().liste;
+    //preveri če je owner
+    const f = await firestore().collection('Shared').doc(id).get();
+    const owner = f.data().owner;
 
-    //deleta main + vse liste
-    await firestore().collection('Shared').doc(id).collection('group').doc('main').delete();
-    for (const list of lists) {
+    if (owner == auth().currentUser.uid) {
+
+      //dobi vse liste v grupi
+      const mainFile = await firestore().collection('Shared').doc(id).collection('group').doc('main').get();
+      const lists = mainFile.data().liste;
+
+      //deleta main + vse liste
+      await firestore().collection('Shared').doc(id).collection('group').doc('main').delete();
+      for (const list of lists) {
         await firestore().collection('Shared').doc(id).collection('group').doc(list).delete();
+      }
+
+      //deleta doc za grupo
+      await firestore().collection('Shared').doc(id).delete();
+
+    } else {
+      //remova iz accessa
+      const f = await firestore().collection('Shared').doc(id).get();
+      const access = f.data().access;
+      let perms;
+      for (let a of access) {
+        if (a.uid == auth().currentUser.uid) perms = a.perms;
+      }
+      await firestore().collection('Shared').doc(id).update({
+        access: firestore.FieldValue.arrayRemove({
+          name: auth().currentUser.displayName,
+          uid: auth().currentUser.uid,
+          perms: perms
+        })
+      })
     }
 
     //deleta group v user doc
     let obj = { shared: firestore.FieldValue.arrayRemove(id) };
     await firestore().collection('Userdata').doc(auth().currentUser.uid).update(obj);
 
-    //deleta doc za grupo
-    await firestore().collection('Shared').doc(id).delete();
-
-    pushHistory({name: 'Delete'}, 'sharedGroup', name);
+    pushHistory({ name: 'Delete' }, 'sharedGroup', name);
 
     //rerendera
     this.componentDidMount();
@@ -67,7 +92,7 @@ class SharedGroups extends React.Component {
 
   groupSettings = (name, id) => {
     console.log('settings: ', name)
-    this.props.navigation.navigate('GroupSettings', {name: name, id: id, fromHome: this.props.inHome})
+    this.props.navigation.navigate('GroupSettings', { name: name, id: id, fromHome: this.props.inHome })
   }
 
   async componentDidMount() {
@@ -78,13 +103,20 @@ class SharedGroups extends React.Component {
 
     let groups = [];
     let groupsByIdAfterSorting = [];
+    let groupsByPerms = [];
 
     for (const group of groupsById) {
-      //preveri če je v groupu, če ni ga remova, če je pa dobi njegov name
+      //loopa skozi groupe, razdeli jih v 3 arreje po podatkih: name, id, perms
       const groupDoc = await firestore().collection('Shared').doc(group).get();
-      const data = groupDoc.data().groupName;
-      groups.push(data);
+      const data = groupDoc.data();
+      groups.push(data.groupName);
       groupsByIdAfterSorting.push(group);
+      //dobi tvoje permse
+      let perms;
+      for (let a of data.access) {
+        if (a.uid == auth().currentUser.uid) perms = a.perms;
+      }
+      groupsByPerms.push(perms)
     }
 
 
@@ -92,14 +124,14 @@ class SharedGroups extends React.Component {
     storeData(['sharedGroupsById', groupsByIdAfterSorting]);
 
     let jsx = groups.map((group, i) => {
-      return <Tile name={group} key={i} id={groupsByIdAfterSorting[i]}
-              clickOnTile={this.clickOnTile} delTile={this.delTile} settings={this.groupSettings} shared={true} />
+      return <Tile name={group} key={i} id={groupsByIdAfterSorting[i]} perms={groupsByPerms[i]}
+        clickOnTile={this.clickOnTile} delTile={this.delTile} settings={this.groupSettings} shared={true} />
     })
     this.setState({
       ...this.state,
       jsx: jsx
     })
-    if (this.state.jsx == '') this.setState({...this.state, jsx: <Text>Add a group by clicking on the + button!</Text>})
+    if (this.state.jsx == '') this.setState({ ...this.state, jsx: <Text>Add a group by clicking on the + button!</Text> })
   }
 
 

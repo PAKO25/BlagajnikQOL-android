@@ -10,7 +10,7 @@ class Tile extends React.Component {
   render() {
     return (
       <TouchableOpacity style={styles.button} 
-      onPress={() => {this.props.clickOnTile(this.props.name, this.props.id)}} 
+      onPress={() => {this.props.clickOnTile(this.props.name, this.props.id, this.props.perms ? this.props.perms : null)}} 
       onLongPress={() => {this.props.delTile(this.props.name, this.props.id)}}>
         <Text style={styles.text}>{this.props.name}</Text>
 

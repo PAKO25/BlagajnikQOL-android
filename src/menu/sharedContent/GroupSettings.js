@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, StyleSheet, BackHandler, View, TouchableOpacity, TextInput, ScrollView, Keyboard } from "react-native";
-import { Config } from '../../config';
+import { Config, storeData } from '../../config';
 import AddButton from "../../utils/AddButton";
 import AccessList from "./AccessField";
 import auth from '@react-native-firebase/auth';
@@ -56,6 +56,8 @@ class GroupSettings extends React.Component {
     update = async () => {
         const id = this.props.route.params.id;
 
+        storeData(['groupSettingsId',id]);
+
         const doc = await firestore().collection('Shared').doc(id).get();
         const data = doc.data();
 
@@ -78,17 +80,17 @@ class GroupSettings extends React.Component {
         })
     }
 
-    removeAccess = async (waiting, name, uid) => {
+    removeAccess = async (waiting, name, uid, perms) => {
         if (!this.state.owner) return;
-        !waiting ? (
+        if (!waiting) {
             await firestore().collection('Shared').doc(this.state.id).update({
-                access: firestore.FieldValue.arrayRemove({ name: name, uid: uid })
+                access: firestore.FieldValue.arrayRemove({ name: name, uid: uid, perms: perms })
             })
-        ) : (
+        } else {
             await firestore().collection('Shared').doc(this.state.id).update({
                 waiting: firestore.FieldValue.arrayRemove(name)
             })
-        )
+        }
         this.update();
     }
 
@@ -96,6 +98,12 @@ class GroupSettings extends React.Component {
         if (!this.state.owner) return;
 
         const email = this.state.access;
+
+        if (email == auth().currentUser.email) {
+            this.alertRef.current.showAlert('You ok?', `You can't add yorself`, 'NO', 'Sorry my bad',
+                () => { this.alertRef.current.hideAlert(); }, () => { this.alertRef.current.hideAlert(); }, false)
+            return;
+        }
 
         //add to waitinglist
         await firestore().collection('Shared').doc('waitingList').collection(email).doc(this.state.id).set({ 0: 0 });
@@ -142,7 +150,7 @@ class GroupSettings extends React.Component {
                                     return <AccessList email={obj.email} key={i} click={this.removeAccess} waiting={true} />
                                 }
                                 if (obj.uid == auth().currentUser.uid) return null;
-                                return <AccessList name={obj.name} uid={obj.uid} key={i} click={this.removeAccess} waiting={false} />
+                                return <AccessList name={obj.name} uid={obj.uid} perms={obj.perms} key={i} click={this.removeAccess} waiting={false} />
                             })}
                         </ScrollView>
 

@@ -122,7 +122,7 @@ class AddScreen extends React.Component {
                 if (this.state.shared) {
                     //shared skupina: najprej file za skupino (owner + members + name), pol pa se main doc v subcollectionu
                     await firestore().collection('Shared').doc(randomId).set({
-                        access: [{ name: auth().currentUser.displayName, uid: auth().currentUser.uid }],
+                        access: [{ name: auth().currentUser.displayName, uid: auth().currentUser.uid, perms: 'Admin' }],
                         owner: auth().currentUser.uid,
                         groupName: groupName,
                         waiting: []
