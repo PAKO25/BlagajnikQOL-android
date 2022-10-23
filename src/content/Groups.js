@@ -1,10 +1,11 @@
 import React from 'react';
 import { ScrollView, Text } from 'react-native';
 import Tile from './Tile';
-import auth from '@react-native-firebase/auth';
+import auth, { firebase } from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { storeData, Config, pushHistory } from '../config';
 import Alert from '../utils/Alert';
+import uuid from 'react-native-uuid';
 
 class Groups extends React.Component {
 
@@ -58,6 +59,59 @@ class Groups extends React.Component {
     this.componentDidMount();
   }
 
+  convertTile = async (name) => {
+    //preveri če je ziher
+    const asyncAlert = () => new Promise((resolve) => {
+      this.alertRef.current.showAlert('Wait!', `Are you sure you want to create a shared version of ${name}?`, 'NO', 'YES',
+        () => { this.alertRef.current.hideAlert(); resolve(false) }, () => { this.alertRef.current.hideAlert(); resolve(true) }, true)
+    });
+    if (!await asyncAlert()) return;
+
+    const id = uuid.v4();
+
+    //naredi doc
+    await firestore().collection('Shared').doc(id).set({
+      owner: auth().currentUser.uid,
+      groupName: name,
+      history: [],
+      waiting: [],
+      access: [{
+        name: auth().currentUser.displayName,
+        uid: auth().currentUser.uid,
+        email: auth().currentUser.email,
+        perms: 'Admin'
+      }]
+    })
+
+    //dobi podatke iz maina
+    const doc = await firestore().collection('Userdata').doc(auth().currentUser.uid).collection(name).doc('main').get();
+    const maindata = doc.data();
+    const emails = maindata.emails;
+    const liste = maindata.liste;
+    const ljudje = maindata.ljudje;
+
+    //ustvari main v shared
+    await firestore().collection('Shared').doc(id).collection('group').doc('main').set({
+      emails: emails,
+      liste: liste,
+      ljudje: ljudje
+    })
+
+    //loopa skozi liste
+    for (const list of liste) {
+      //dobi podatke
+      const listDoc = await firestore().collection('Userdata').doc(auth().currentUser.uid).collection(name).doc(list).get();
+      const listData = listDoc.data();
+
+      //ustvari novo listo v shared
+      await firestore().collection('Shared').doc(id).collection('group').doc(list).set(listData);
+    }
+
+    //doda v shared
+    await firestore().collection('Userdata').doc(auth().currentUser.uid).update({
+      shared: firestore.FieldValue.arrayUnion(id)
+    })
+  }
 
   async componentDidMount() {
     console.log('showgroups')
@@ -68,7 +122,7 @@ class Groups extends React.Component {
     storeData(['groups', groups]);
 
     let jsx = groups.map((group, i) => {
-      return <Tile name={group} key={i} clickOnTile={this.clickOnTile} delTile={this.delTile} shared={false} />
+      return <Tile name={group} key={i} clickOnTile={this.clickOnTile} delTile={this.delTile} shared={false} convert={this.convertTile} group={true} />
     })
     this.setState({
       ...this.state,

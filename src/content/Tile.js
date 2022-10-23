@@ -9,18 +9,28 @@ class Tile extends React.Component {
 
   render() {
     return (
-      <TouchableOpacity style={styles.button} 
-      onPress={() => {this.props.clickOnTile(this.props.name, this.props.id, this.props.perms ? this.props.perms : null)}} 
-      onLongPress={() => {this.props.delTile(this.props.name, this.props.id)}}>
+      <TouchableOpacity style={styles.button}
+        onPress={() => { this.props.clickOnTile(this.props.name, this.props.id, this.props.perms ? this.props.perms : null) }}
+        onLongPress={() => { this.props.delTile(this.props.name, this.props.id) }}>
         <Text style={styles.text}>{this.props.name}</Text>
 
         {this.props.shared ? (
           <>
-          <TouchableOpacity style={styles.settingsField} onPress={() => {this.props.settings(this.props.name, this.props.id)}}>
-            <Image source={require('../../assets/groupsettingsicon.png')} style={styles.settingsIcon}></Image>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.settingsField} onPress={() => { this.props.settings(this.props.name, this.props.id) }}>
+              <Image source={require('../../assets/groupsettingsicon.png')} style={styles.settingsIcon}></Image>
+            </TouchableOpacity>
           </>
-        ) : (null)}
+        ) : (
+          <>
+            {this.props.group ? (
+              <>
+                <TouchableOpacity style={styles.settingsField} onPress={() => { this.props.convert(this.props.name) }}>
+                  <Image source={require('../../assets/shareicon.png')} style={styles.settingsIcon}></Image>
+                </TouchableOpacity>
+              </>
+            ) : (null)}
+          </>
+        )}
       </TouchableOpacity>
     )
   }

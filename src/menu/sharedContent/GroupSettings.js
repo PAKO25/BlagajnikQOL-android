@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, StyleSheet, BackHandler, View, TouchableOpacity, TextInput, ScrollView, Keyboard } from "react-native";
+import { Text, StyleSheet, BackHandler, View, TouchableOpacity, TextInput, ScrollView, Keyboard, Image } from "react-native";
 import { Config, storeData } from '../../config';
 import AddButton from "../../utils/AddButton";
 import AccessList from "./AccessField";
@@ -131,9 +131,9 @@ class GroupSettings extends React.Component {
         }
 
         //add to waitinglist
-        await firestore().collection('Shared').doc('waitingList').collection(email).doc(this.state.id).set({ 
+        await firestore().collection('Shared').doc('waitingList').collection(email).doc(this.state.id).set({
             time: firestore.FieldValue.serverTimestamp()
-         });
+        });
 
         //add to access
         await firestore().collection('Shared').doc(this.state.id).update({
@@ -150,6 +150,48 @@ class GroupSettings extends React.Component {
         await asyncAlert();
 
         this.update()
+    }
+
+    convertToPrivate = async () => {
+        const asyncAlert = () => new Promise((resolve) => {
+            this.alertRef.current.showAlert('Wait!', `Are you sure you want to make a private copy of this group?`, 'NO', 'YES',
+                () => { this.alertRef.current.hideAlert(); resolve(false) }, () => { this.alertRef.current.hideAlert(); resolve(true) }, true)
+        })
+
+        if (!await asyncAlert()) return;
+
+        const doc = await firestore().collection('Shared').doc(this.state.id).get();
+        const docData = doc.data();
+
+        const groupName = docData.groupName;
+
+        const maindoc = await firestore().collection('Shared').doc(this.state.id).collection('group').doc('main').get();
+        const maindata = maindoc.data();
+        const emails = maindata.emails;
+        const liste = maindata.liste;
+        const ljudje = maindata.ljudje;
+
+        //ustvari main
+        await firestore().collection('Userdata').doc(auth().currentUser.uid).collection(groupName).doc('main').set({
+            emails: emails,
+            liste: liste,
+            ljudje: ljudje
+        })
+
+        //loopa skozi liste
+        for (const list of liste) {
+            //dobi podatke
+            const listDoc = await firestore().collection('Shared').doc(this.state.id).collection('group').doc(list).get();
+            const listData = listDoc.data();
+
+            //ustvari novo listo v private
+            await firestore().collection('Userdata').doc(auth().currentUser.uid).collection(groupName).doc(list).set(listData);
+        }
+
+        //doda v skupine
+        await firestore().collection('Userdata').doc(auth().currentUser.uid).update({
+            skupine: firestore.FieldValue.arrayUnion(groupName)
+          })
     }
 
     render() {
@@ -193,6 +235,11 @@ class GroupSettings extends React.Component {
                         <Text style={Style.title}>You don't have the permission to manage this group's settings!</Text>
                     </View>
                 )}
+
+
+                <TouchableOpacity style={Style.convertField} onPress={this.convertToPrivate}>
+                    <Image source={require('../../../assets/homeicon.png')} style={Style.convertIcon}></Image>
+                </TouchableOpacity>
 
 
                 <AddButton sign={'<---'} handler={this.handleBack} />
@@ -253,6 +300,21 @@ const Style = StyleSheet.create({
         justifyContent: 'center',
         flex: 1,
         marginBottom: 120,
+    },
+    convertField: {
+        position: 'absolute',
+        top: 185,
+        right: 70,
+        backgroundColor: '#00000050',
+        borderRadius: 40,
+        width: 30,
+        height: 30,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    convertIcon: {
+        width: 20,
+        height: 20
     }
 })
 
