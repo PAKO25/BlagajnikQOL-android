@@ -130,7 +130,7 @@ class Human extends React.Component {
         user_id: Config.email.publicKey,
         template_params: {
           email: email,
-          by: auth().currentUser.displayName,
+          by: auth().currentUser.displayName + " (" + auth().currentUser.email + ")",
           list: this.props.shared ? getData('sharedListShown') : getData('listShown'),
           code: code
         },
