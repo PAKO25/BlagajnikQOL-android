@@ -12,7 +12,7 @@ import DrawerContent from './menu/DrawerContent';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import { Config, useNewSettings, checkShared } from './config';
+import { Config, useNewSettings, checkShared, restoreConfig } from './config';
 import GroupSettings from './menu/sharedContent/GroupSettings';
 import Payments from './menu/Payments'
 
@@ -66,6 +66,7 @@ const App = () => {
 
     } else {
       //signed out
+      restoreConfig();
       changeLoggedIn(false);
     }
   }

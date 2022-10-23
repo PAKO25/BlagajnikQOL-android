@@ -13,6 +13,28 @@ function getData(data) {
     return storage[data];
 }
 
+const defaultConfig = {
+    settings: {
+        confirmDelete: true,
+        showShared: false,
+        confirmToggle: false,
+        sendEmail: true,
+        mainColor: '#429ef5',
+        customBackground: {
+            use: false,
+            base64: ''
+        }
+    },
+    background: {
+        uri: '../assets/ozadje.jpg',
+    },
+    email: {
+        publicKey: 'aPviREniYHskJ59p5',
+        serviceId: 'service_a92cifs',
+        templateId: 'template_bwl2eme',
+    }
+}
+
 let Config = {
     settings: {
         confirmDelete: true,
@@ -33,6 +55,11 @@ let Config = {
         serviceId: 'service_a92cifs',
         templateId: 'template_bwl2eme',
     }
+}
+
+function restoreConfig() {
+    Config = defaultConfig;
+    console.log('restored config')
 }
 
 function useNewSettings(settings) {
@@ -158,4 +185,4 @@ async function pushHistory(action, path, who, alllists, shared, sharedGroupId, b
     }
 }
 
-export { Config, storeData, getData, useNewSettings, changeSettings, setNewBackground, checkShared, pushHistory, resetBackground };
+export { Config, storeData, getData, useNewSettings, changeSettings, setNewBackground, checkShared, pushHistory, resetBackground, restoreConfig };
