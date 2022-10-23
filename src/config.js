@@ -57,9 +57,18 @@ async function setNewBackground(base64) {
 
     await firestore().collection('Userdata').doc(auth().currentUser.uid).update({
         settings: Config.settings
-    }) 
-    
+    })
+
     Config.settings.customBackground.base64 = string;
+}
+
+async function resetBackground() {
+    console.log('reset background')
+    Config.settings.customBackground.base64 = '';
+    Config.settings.customBackground.use = false;
+    await firestore().collection('Userdata').doc(auth().currentUser.uid).update({
+        settings: Config.settings
+    })
 }
 
 
@@ -73,7 +82,7 @@ async function checkShared() {
         for (const groupId of lists) {
 
             await firestore().collection('Shared').doc(groupId).update({
-                access: firestore.FieldValue.arrayUnion({ name: auth().currentUser.displayName, uid: auth().currentUser.uid, perms: 'Viewer' }),
+                access: firestore.FieldValue.arrayUnion({ name: auth().currentUser.displayName, uid: auth().currentUser.uid, perms: 'Viewer', email: auth().currentUser.email }),
                 waiting: firestore.FieldValue.arrayRemove(email)
             }).catch(() => { console.log('fake waitinglist') })
 
@@ -83,8 +92,6 @@ async function checkShared() {
 
             await firestore().collection('Shared').doc('waitingList').collection(email).doc(groupId).delete();
         }
-    } else {
-        console.log('No new groups to join!')
     }
 
     //preveri ce sem se vedno v vseh grupah
@@ -140,4 +147,4 @@ async function pushHistory(action, path, who, alllists, shared, sharedGroupId, b
     }
 }
 
-export { Config, storeData, getData, useNewSettings, changeSettings, setNewBackground, checkShared, pushHistory };
+export { Config, storeData, getData, useNewSettings, changeSettings, setNewBackground, checkShared, pushHistory, resetBackground };

@@ -45,6 +45,15 @@ class SharedLists extends React.Component {
   }
 
   delTile = async (name) => {
+
+    //preveri če ma dovoljenje
+    const perms = getData('sharedGroupShownPerms');
+    if (perms != 'Admin') {
+        this.alertRef.current.showAlert('Oops!', `You dont have the required permissions! Talk to the group owner.`, 'NO', 'OK',
+            () => { null }, () => { this.alertRef.current.hideAlert(); }, false);
+        return;
+    }
+
     //preveri če je ziher
     let sure = false;
     const asyncAlert = () => new Promise((resolve) => {

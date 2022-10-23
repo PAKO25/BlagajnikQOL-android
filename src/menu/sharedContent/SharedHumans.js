@@ -48,7 +48,15 @@ class SharedHumans extends React.Component {
 
 
     delHuman = async (name) => {
-        console.log('delsharedhuman: ', name)
+
+        //preveri če ma dovoljenje
+        const perms = getData('sharedGroupShownPerms');
+        if (perms != 'Admin') {
+            this.alertRef.current.showAlert('Oops!', `You dont have the required permissions! Talk to the group owner.`, 'NO', 'OK',
+                () => { null }, () => { this.alertRef.current.hideAlert(); }, false);
+            return;
+        }
+
         //preveri če je ziher
         let sure = false;
         const asyncAlert = () => new Promise((resolve) => {
@@ -57,9 +65,9 @@ class SharedHumans extends React.Component {
         });
         if (Config.settings.confirmDelete) {
             await asyncAlert();
-          } else {
+        } else {
             sure = true;
-          }
+        }
         if (!sure) return;
 
         //remova iz vseh al samo totega
@@ -92,7 +100,7 @@ class SharedHumans extends React.Component {
                 .collection('group').doc(getData('sharedListShown')).update(obj);
         }
 
-        pushHistory({name: 'Delete'}, `${getData('sharedGroupShownName')}/${getData('sharedListShown')}`, name, all, true, getData('sharedGroupShown'), auth().currentUser.displayName)
+        pushHistory({ name: 'Delete' }, `${getData('sharedGroupShownName')}/${getData('sharedListShown')}`, name, all, true, getData('sharedGroupShown'), auth().currentUser.displayName)
 
         //rerendera
         this.componentDidMount();

@@ -7,6 +7,7 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import Alert from "../../utils/Alert";
 import Frame from "../../utils/Frame";
+import { resolvePlugin } from "@babel/core";
 
 
 class GroupSettings extends React.Component {
@@ -56,7 +57,7 @@ class GroupSettings extends React.Component {
     update = async () => {
         const id = this.props.route.params.id;
 
-        storeData(['groupSettingsId',id]);
+        storeData(['groupSettingsId', id]);
 
         const doc = await firestore().collection('Shared').doc(id).get();
         const data = doc.data();
@@ -80,11 +81,11 @@ class GroupSettings extends React.Component {
         })
     }
 
-    removeAccess = async (waiting, name, uid, perms) => {
+    removeAccess = async (waiting, name, uid, perms, email) => {
         if (!this.state.owner) return;
         if (!waiting) {
             await firestore().collection('Shared').doc(this.state.id).update({
-                access: firestore.FieldValue.arrayRemove({ name: name, uid: uid, perms: perms })
+                access: firestore.FieldValue.arrayRemove({ name: name, uid: uid, perms: perms, email: email })
             })
         } else {
             await firestore().collection('Shared').doc(this.state.id).update({
@@ -105,6 +106,30 @@ class GroupSettings extends React.Component {
             return;
         }
 
+        //preveri če že čaka
+        const doc = await firestore().collection('Shared').doc(this.state.id).get();
+        const data = doc.data();
+        let alreadyWaiting = false;
+        for (let i of data.waiting) {
+            if (i == email) alreadyWaiting = true;
+        }
+        if (alreadyWaiting) {
+            this.alertRef.current.showAlert('You ok?', `This person is already waiting to join the group!`, 'NO', 'Sorry my bad',
+                () => { this.alertRef.current.hideAlert(); }, () => { this.alertRef.current.hideAlert(); }, false)
+            return;
+        }
+
+        //preveri če je že not
+        alreadyWaiting = false;
+        for (let i of data.access) {
+            if (i.email == email) alreadyWaiting = true;
+        }
+        if (alreadyWaiting) {
+            this.alertRef.current.showAlert('You ok?', `This person is already in the group!`, 'NO', 'Sorry my bad',
+                () => { this.alertRef.current.hideAlert(); }, () => { this.alertRef.current.hideAlert(); }, false)
+            return;
+        }
+
         //add to waitinglist
         await firestore().collection('Shared').doc('waitingList').collection(email).doc(this.state.id).set({ 0: 0 });
 
@@ -115,8 +140,14 @@ class GroupSettings extends React.Component {
 
         Keyboard.dismiss();
 
-        this.alertRef.current.showAlert('Success!', `Added ${this.state.access} to the waiting list. Tell them to login to gain access.`, 'NO', 'OK',
-            () => { null }, () => { this.alertRef.current.hideAlert(); this.update() }, false)
+        const asyncAlert = () => new Promise((resolve) => {
+            this.alertRef.current.showAlert('Success!', `Added ${this.state.access} to the waiting list. Tell them to login to gain access.`, 'NO', 'OK',
+                () => { null }, async () => { await this.alertRef.current.hideAlert(); resolve() }, false)
+        })
+
+        await asyncAlert();
+
+        this.update()
     }
 
     render() {
@@ -150,7 +181,7 @@ class GroupSettings extends React.Component {
                                     return <AccessList email={obj.email} key={i} click={this.removeAccess} waiting={true} />
                                 }
                                 if (obj.uid == auth().currentUser.uid) return null;
-                                return <AccessList name={obj.name} uid={obj.uid} perms={obj.perms} key={i} click={this.removeAccess} waiting={false} />
+                                return <AccessList name={obj.name} uid={obj.uid} perms={obj.perms} email={obj.email} key={i} click={this.removeAccess} waiting={false} />
                             })}
                         </ScrollView>
 

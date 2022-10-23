@@ -47,7 +47,10 @@ const App = () => {
           uid: user.uid,
           createdAt: firestore.FieldValue.serverTimestamp(),
           skupine: [],
-          settings: Config.settings
+          settings: Config.settings,
+          shared: [],
+          history: [],
+          payments: []
         })
       } else {
         //dobi settinge

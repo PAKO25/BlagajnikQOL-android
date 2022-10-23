@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, ScrollView, StyleSheet, View, TouchableOpacity, Switch, Pressable, findNodeHandle } from "react-native";
-import { Config, changeSettings, setNewBackground } from "../config";
+import { Config, changeSettings, setNewBackground, resetBackground } from "../config";
 import Alert from "../utils/Alert";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import ExplainText from "../utils/ExplainText";
@@ -179,6 +179,20 @@ class Settings extends React.Component {
                     <TouchableOpacity style={[Style.label, Style.fade]} onPress={this.changeImage}>
                         <Text style={Style.settingsText}>Background Image</Text>
                     </TouchableOpacity>
+
+                    <Pressable delayLongPress={300} style={[Style.label, Style.fade]}
+                    onPress={async () => {await resetBackground(); this.forceUpdate();}}
+                        onLongPress={(e) => {
+                            let relY = e.nativeEvent.locationY;
+                            let elementHandle = findNodeHandle(this.refs["el5"]);
+                            if (e.nativeEvent.target == elementHandle) {
+                                relY = (Style.label.height - Style.settingsText.fontSize) / 2 + relY;
+                            }
+                            this.showExplainText("In case of an error, resets the background image back to the default.",
+                                e.nativeEvent.pageY - relY + Style.label.height)
+                        }}>
+                        <Text style={Style.settingsText} ref="el5">Reset background image</Text>
+                    </Pressable>
 
                 </ScrollView>
 

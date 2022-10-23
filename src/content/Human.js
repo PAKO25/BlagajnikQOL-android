@@ -201,6 +201,16 @@ class Human extends React.Component {
 
   clickHuman = async () => {
 
+    //preveri če ma dovoljenje
+    if (this.props.shared) {
+      const perms = getData('sharedGroupShownPerms');
+      if (perms == 'Viewer') {
+        this.alertRef.current.showAlert('Oops!', `You dont have the required permissions! Talk to the group owner.`, 'NO', 'OK',
+        () => { null }, () => { this.alertRef.current.hideAlert(); }, false);
+        return;
+      }
+    }
+
     //preveri če je ziher
     let sure = false;
     const asyncAlert = () => new Promise((resolve) => {

@@ -60,6 +60,16 @@ class AddScreen extends React.Component {
 
     add = async () => {
 
+        if (this.state.shared && this.props.route.params.name != 'groups') {
+            //preveri če ma dovoljenje
+            const perms = getData('sharedGroupShownPerms');
+            if (perms != 'Admin') {
+                this.alertRef.current.showAlert('Oops!', `You dont have the required permissions! Talk to the group owner.`, 'NO', 'OK',
+                    () => { null }, () => { this.alertRef.current.hideAlert(); }, false);
+                return;
+            }
+        }
+
         if (this.state.name == '') {
             //name is undefined
             this.alertRef.current.showAlert('U ok?', `Fill out the form first!`, 'NO', 'OK',

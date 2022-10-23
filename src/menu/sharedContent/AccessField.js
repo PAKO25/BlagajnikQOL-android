@@ -80,7 +80,7 @@ class AccessList extends React.Component {
                                 )}
                             </Text>
                             <TouchableOpacity style={Style.button} onPress={() => {
-                                !this.props.waiting ? this.props.click(false, this.props.name, this.props.uid, this.props.perms) :
+                                !this.props.waiting ? this.props.click(false, this.props.name, this.props.uid, this.props.perms, this.props.email) :
                                     this.props.click(true, this.props.email)
                             }}>
                                 <Text style={Style.remove}>X</Text>
