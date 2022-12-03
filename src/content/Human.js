@@ -140,7 +140,7 @@ class Human extends React.Component {
     fetch('https://api.emailjs.com/api/v1.0/email/send', data)
       .then(d => { console.log(d.status) })
 
-      this.storePayment(code, email)
+    this.storePayment(code, email)
   }
 
   storePayment = async (code, email) => {
@@ -206,7 +206,7 @@ class Human extends React.Component {
       const perms = getData('sharedGroupShownPerms');
       if (perms == 'Viewer') {
         this.alertRef.current.showAlert('Oops!', `You dont have the required permissions! Talk to the group owner.`, 'NO', 'OK',
-        () => { null }, () => { this.alertRef.current.hideAlert(); }, false);
+          () => { null }, () => { this.alertRef.current.hideAlert(); }, false);
         return;
       }
     }
@@ -215,7 +215,15 @@ class Human extends React.Component {
     let sure = false;
     const asyncAlert = () => new Promise((resolve) => {
       this.alertRef.current.showAlert('Wait!', `Are you sure you want to toggle ${this.props.name}?`, 'NO', 'YES',
-        () => { this.alertRef.current.hideAlert(); resolve() }, () => { this.alertRef.current.hideAlert(); sure = true; resolve() }, true)
+        () => { this.alertRef.current.hideAlert(); resolve() }, () => {
+          if (this.state.on) {
+            this.alertRef.current.hideAlert();
+          }
+          if (!this.state.on && !Config.settings.sendEmail) {
+            this.alertRef.current.hideAlert();
+          }
+          sure = true; resolve();
+        }, true)
     });
     if (Config.settings.confirmToggle) {
       await asyncAlert();

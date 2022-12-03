@@ -49,8 +49,10 @@ export default class Payments extends React.Component {
                 resolve(text)
             })
         })
-        const code = await asyncInput();
+        let code = await asyncInput();
         if (code.length < 5) { this.doesntExist(); return; }
+
+        code = code.replace(/\s+/g, '');
 
         //poišče kodo
         const doc = await firestore().collection('Payments').doc(code).get();

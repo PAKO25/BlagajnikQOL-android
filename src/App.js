@@ -55,7 +55,8 @@ const App = () => {
       } else {
         //dobi settinge
         const data = userDocument.data();
-        useNewSettings(data.settings);
+        //počaka da se vse nalozi -> zato promise
+        await new Promise((resolve) => {useNewSettings(data.settings, resolve)});
       }
 
       //preveri če so kaki novi sharedgroupi na waitinglistu

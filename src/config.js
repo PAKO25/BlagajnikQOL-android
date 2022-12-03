@@ -1,16 +1,17 @@
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import lzstring from './utils/lz-string';
+import storage from '@react-native-firebase/storage';
+import uuid from 'react-native-uuid';
 
 
-var storage = {};
+var localstorage = {};
 function storeData(data) {
     //data pride v obliki ['displayName', 'Patrik Kocmut']
     //stora v storage {data[0]: data[1]} npr. {displayName: 'Patrik Kocmut'}
-    storage[data[0]] = data[1];
+    localstorage[data[0]] = data[1];
 }
 function getData(data) {
-    return storage[data];
+    return localstorage[data];
 }
 
 const defaultConfig = {
@@ -18,20 +19,19 @@ const defaultConfig = {
         confirmDelete: true,
         showShared: false,
         confirmToggle: false,
-        sendEmail: true,
+        sendEmail: false,
         mainColor: '#429ef5',
         customBackground: {
             use: false,
-            base64: ''
+            base64: '',
+            uri: ''
         }
     },
     background: {
         uri: '../assets/ozadje.jpg',
     },
     email: {
-        publicKey: 'aPviREniYHskJ59p5',
-        serviceId: 'service_a92cifs',
-        templateId: 'template_bwl2eme',
+        
     }
 }
 
@@ -40,20 +40,19 @@ let Config = {
         confirmDelete: true,
         showShared: false,
         confirmToggle: false,
-        sendEmail: true,
+        sendEmail: false,
         mainColor: '#429ef5',
         customBackground: {
             use: false,
-            base64: ''
+            base64: '',
+            uri: ''
         }
     },
     background: {
         uri: '../assets/ozadje.jpg',
     },
     email: {
-        publicKey: 'aPviREniYHskJ59p5',
-        serviceId: 'service_a92cifs',
-        templateId: 'template_bwl2eme',
+        
     }
 }
 
@@ -62,25 +61,64 @@ function restoreConfig() {
     console.log('restored config')
 }
 
-function useNewSettings(settings) {
+function useNewSettings(settings, resolve) {
     if (settings.customBackground.use) {
-        settings.customBackground.base64 = lzstring.decompressFromUTF16(settings.customBackground.base64);
+        //dobi custom background iz storiga gleda na uri v base64
+        const path = settings.customBackground.base64;
+        const ref = storage().ref(path);
+        ref.getDownloadURL().then((url) => {
+            fetch(url).then(r => {
+                r.blob().then(b => {
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        var dataUrl = reader.result;
+                        var base64 = dataUrl.split(',')[1];
+                        settings.customBackground.base64 = 'data:image/png;base64,' + base64;
+                        settings.customBackground.uri = path;
+                        Config.settings = settings;
+                        resolve();
+                    };
+                    reader.readAsDataURL(b);
+                })
+            })
+        })
+    } else {
+        Config.settings = settings;
+        resolve();
     }
-    Config.settings = settings;
 }
 
 async function changeSettings(which, value) {
     Config.settings[which] = value;
 
+    let newSettings = JSON.parse(JSON.stringify(Config.settings));
+    if (newSettings.customBackground.use) newSettings.customBackground.base64 = newSettings.customBackground.uri;
+
     await firestore().collection('Userdata').doc(auth().currentUser.uid).update({
-        settings: Config.settings
+        settings: newSettings
     })
+
+    console.log('changed')
 }
 
 async function setNewBackground(base64) {
-    const string = 'data:image/png;base64,' + base64
-    Config.settings.customBackground.base64 = lzstring.compressToUTF16(string);
+
+    const string = 'data:image/png;base64,' + base64;
+    const randomId = uuid.v4();
+    const ref = storage().ref(randomId);
+
+    await ref.putString(base64, storage.StringFormat.BASE64);
+
+    Config.settings.customBackground.base64 = randomId;
     Config.settings.customBackground.use = true;
+
+    //deleta staro sliko
+    const pastUri = Config.settings.customBackground.uri;
+    if (pastUri != '') {
+        await storage().ref(pastUri).delete();
+    }
+
+    Config.settings.customBackground.uri = randomId;
 
     await firestore().collection('Userdata').doc(auth().currentUser.uid).update({
         settings: Config.settings
